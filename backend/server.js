@@ -71,13 +71,47 @@ app.post('/auth/login', async (req, res) => {
   });
 });
 
-// Rota protegida
+//Rota protegida
 app.get('/protected', (req, res) => {
   const authHeader = req.headers.authorization;
   if(!authHeader) return res.status(401).json({ msg: 'Token não oferecido!'});
 
   const token = authHeader.split(' ')[1];
   try{
-    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'minhaChaveSuperSecreta');
+    res.json({ msg: 'Acesso Autorizado! '}, decoded );
+  }catch(err){
+    res.status(401).json({ msg: 'Token inválido! '});
   }
+});
+
+app.get('/users', async(req, res) => {
+  const users = await database.list();
+  res.json(users);
 })
+
+app.post('/users', async(req, res) => {
+  const { name, email, password } = req.body;
+  if(!name || !email || !password){
+    return res.status(400).json({ msg: 'Preencha todos os campos!' });
+  }
+  await database.create({ name, email, password })
+  res.status(201).send()
+});
+
+app.put('/users/:id', async(req, res) => {
+  const id = req.params.id;
+  const user = req.body;
+  await database.update(id, user);
+  res.status(204).send()
+})
+
+app.delete('/users/:id', async(req, res) => {
+  const id = req.params.id;
+  await database.delete(id);
+  res.status(204).send();
+});
+
+app.listen(3001, () => {
+  console.log('Servidor rodando na porta 3001');
+});
