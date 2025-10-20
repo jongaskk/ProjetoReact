@@ -104,9 +104,9 @@ app.put('/users/:id', async(req, res) => {
   const user = req.body;
   await database.update(id, user);
   res.status(204).send()
-})
+});
 
-app.delete('/users/:id', async(req, res) => {
+app.delete('/users/:id', async(req,res) => {
   const id = req.params.id;
   await database.delete(id);
   res.status(204).send();
